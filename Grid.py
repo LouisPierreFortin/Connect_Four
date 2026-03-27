@@ -43,6 +43,15 @@ class Grid:
     @overload
     def status(self, column : int, player = Status.P2) -> None: ...
     def status(self, *args, **kwargs) -> dict[tuple[int,int], Status] | None:
+        """
+        Analyze states of tiles
+        Parameters
+        ----------
+        *args : int
+            Column
+        **kwargs : Status
+            Any status except INACTIVE. Addressed as player
+        """
 
         if not kwargs and not args:
             temp_dict : dict[tuple[int,int], Status] = {}
@@ -51,26 +60,26 @@ class Grid:
             return temp_dict
         elif kwargs["player"] == Status.P1:
             col = args[0]
-            for key in self.dict_status:
-                if key[1] == col:
-                    if self.dict_status[key] != Status.INACTIVE:
-                        raise ValueError("Full column")
-                    else:
-                        for l in range(Grid.gridy - 1):
-                            print(l)
-                            if self.dict_status[tuple([col, l + 1])] == Status.INACTIVE:
-                                continue
-                            else:
-                                self.dict_status[tuple([col , l + 1])] = Status.P1
-                                return None
-                        else:
-                            self.dict_status[tuple([col, l])] = Status.P1
-                            return None
+            for i in range(Grid.gridy):
+                if self.dict_status.get((col,i + 1)) == Status.INACTIVE:
+                    continue
+                else:
+                    self.dict_status[(col,i)] = Status.P1
+                    return None
+            self.dict_status[(col, 5)] = Status.P1
             return None
         else:
-            return [args,kwargs]
+            col = args[0]
+            for i in range(Grid.gridy):
+                if self.dict_status.get((col, i + 1)) == Status.INACTIVE:
+                    continue
+                else:
+                    self.dict_status[(col, i)] = Status.P2
+                    return None
+            self.dict_status[(col, 5)] = Status.P2
+            return None
 
-    def status_update(self):
+    def check_win(self) -> bool:
         pass
 
     def __str__(self):
@@ -78,14 +87,14 @@ class Grid:
         for i in range(6):
             result += f"{i} "
             for j in range(7):
-                key = tuple([i,j])
-                if self.dict_status[key] == Status.INACTIVE:
-                    result += f"{Fore.RESET}[ ]"
-                elif self.dict_status[key] == Status.P1:
-                    result += f"{Fore.YELLOW}[ ]"
-            result += f"\n"
+                if tuple([j,i]) in [key for key in self.dict_status if self.dict_status[key] == Status.P1]:
+                    result += f"{Back.YELLOW}[ ]"
+                elif tuple([j,i]) in [key for key in self.dict_status if self.dict_status[key] == Status.P2]:
+                    result += f"{Back.RED}[ ]"
+                else:
+                    result += f"{Back.RESET}[ ]"
+            result += f"{Back.RESET}\n"
         return result
-
 
 if __name__ == '__main__':
     grid = Grid()
@@ -93,6 +102,6 @@ if __name__ == '__main__':
     print(grid.dict_status)
     grid.status(4, player = Status.P1)
     print(grid.dict_status)
-    grid.status(4, player=Status.P1)
+    grid.status(4, player=Status.P2)
     print(grid.dict_status)
     print(grid)
