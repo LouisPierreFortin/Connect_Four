@@ -3,10 +3,14 @@ from Status import Status
 from Position import Position
 
 def _player_1(col : int) -> bool:
-    grid.status(col, player=Status.P1)
+    pos = grid.status(col, player=Status.P1)
+    if grid.check_win(pos):
+        print("Player 1 wins!")
 
 def _player_2(col : int) -> bool:
-    grid.status(col, player=Status.P2)
+    pos = grid.status(col, player=Status.P2)
+    if grid.check_win(pos):
+        print("Player 2 wins!")
 
 def main():
     global grid

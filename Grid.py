@@ -2,6 +2,7 @@ from typing import overload
 
 from Status import *
 from Position import *
+from WinCon import *
 from colorama import Fore, Back, init
 init(autoreset=True)
 
@@ -39,10 +40,10 @@ class Grid:
     @overload
     def status(self) -> dict[tuple[int,int], Status]: ...
     @overload
-    def status(self, column : int, player = Status.P1) -> None: ...
+    def status(self, column : int, player = Status.P1) -> tuple[int,int]: ...
     @overload
-    def status(self, column : int, player = Status.P2) -> None: ...
-    def status(self, *args, **kwargs) -> dict[tuple[int,int], Status] | None:
+    def status(self, column : int, player = Status.P2) -> tuple[int,int]: ...
+    def status(self, *args, **kwargs) -> dict[tuple[int,int], Status] | tuple[int,int]:
         """
         Analyze states of tiles
         Parameters
@@ -65,9 +66,9 @@ class Grid:
                     continue
                 else:
                     self.dict_status[(col,i)] = Status.P1
-                    return None
+                    return col, i
             self.dict_status[(col, 5)] = Status.P1
-            return None
+            return col, 5
         else:
             col = args[0]
             for i in range(Grid.gridy):
@@ -75,12 +76,19 @@ class Grid:
                     continue
                 else:
                     self.dict_status[(col, i)] = Status.P2
-                    return None
+                    return col, i
             self.dict_status[(col, 5)] = Status.P2
-            return None
+            return col, i
 
-    def check_win(self) -> bool:
-        pass
+    def check_win(self, last_played : tuple[int,int]) -> bool:
+        winv = Vertical(self.dict_status).check_win(last_played)
+        winh = Horizontal(self.dict_status).check_win(last_played)
+        wind = Diagonal(self.dict_status, self.grid).check_win(last_played)
+        if winv or winh or wind:
+            return True
+        else:
+            return False
+
 
     def __str__(self):
         result : str = "   0  1  2  3  4  5  6\n"
